@@ -1,4 +1,4 @@
-# Unity Based Data Generator
+# Python Data Analysis
 
 # 1.Description
 This is a tool for data analysis. It will display Mean Median and mode. Further function developing
