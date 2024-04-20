@@ -3,18 +3,19 @@ Data Analysis tool(byt zhuan yong :)
 
 Base on: https://github.com/rdbende/ttk-widget-factory
 """
-
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 import pandas as pd
 import statistics
 from collections import Counter
+################################# Functions #################################
 def update_tree_view():
     global treeview
     row_keys = df.index.tolist()
     # Insert data into Treeviewh
     treeview.delete(*treeview.get_children())
-    for i, row_label in enumerate(row_keys):
+    for i, row_key in enumerate(row_keys):
         values = df.iloc[i].tolist()
         treeview.insert('', 'end', values=values)
 
@@ -23,7 +24,18 @@ def clear_nan():
     df = df.dropna()
     update_tree_view()
 
-df = pd.read_csv('SP500.csv')
+def save_file():
+    global df, file_name
+    print(file_name[0:-3]+"_processed" + file_name[-3:])
+    df.to_csv(file_name[0:-4]+"_processed" + file_name[-4:], index=False)    
+################################# End of Functions ################################# 
+
+################################# Variables #################################
+file_name = filedialog.askopenfilename()
+df = pd.read_csv(file_name)
+################################# End of Variables #################################
+
+################################# Data Analysis #################################
 mean_values = []
 median_values = []
 for index, row in df.iterrows():
@@ -47,7 +59,9 @@ def calculate_mode(row):
 df['Mode'] = df.apply(calculate_mode, axis=1)
 df['Mean'] = mean_values
 df['Median'] = median_values
+################################# End of Data Analysis #################################
 
+################################# GUI #################################
 root = tk.Tk()
 root.title("Forest")
 root.option_add("*tearOff", False) # This is always a good idea
@@ -128,7 +142,7 @@ clear_nan_but = ttk.Button(widgets_frame, text="Clear all Nan", command=clear_na
 clear_nan_but.grid(row=0, column=0, padx=5, pady=10, sticky="nsew")
 
 # Button
-save_file_but = ttk.Button(widgets_frame, text="Save File")
+save_file_but = ttk.Button(widgets_frame, text="Save File", command=save_file)
 save_file_but.grid(row=1, column=0, padx=5, pady=10, sticky="nsew")
 
 # # Entry
@@ -210,7 +224,6 @@ treeScrolly.config(command=treeview.yview)
 treeScrollx.config(command=treeview.xview)
 
 # Configure the columns
-print(column_keys)
 # For the first column, use special identifier "#0"
 treeview.column("#0", width=120)
 treeview.heading("#0",anchor="w")
@@ -277,5 +290,5 @@ root.geometry("+{}+{}".format(x_cordinate, y_cordinate))
 
 # Start the main loop
 root.mainloop()
-
+################################# End of GUI #################################
 
