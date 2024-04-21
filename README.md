@@ -40,6 +40,12 @@ https://github.com/rdbende/Forest-ttk-theme
 
 # 6. Update
 
+## 4/21/2024
+
+* Now accepting both excel and csv file reading and saving
+* Fix column shrinking when being resized
+* Fix saving excel file with wrong extension
+
 ## 4/20/2024
 
 * Add file selection at start

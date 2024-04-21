@@ -26,13 +26,25 @@ def clear_nan():
 
 def save_file():
     global df, file_name
-    print(file_name[0:-3]+"_processed" + file_name[-3:])
-    df.to_csv(file_name[0:-4]+"_processed" + file_name[-4:], index=False)    
+    dot_ind = file_name.rfind(".")
+    df.to_csv(file_name[0:dot_ind]+"_processed" + file_name[dot_ind:], index=False)    
+
+def read_file(file_path):
+    # Check if the file has a .xlsx or .xls extension (Excel file)
+    if file_path.endswith('.xlsx') or file_path.endswith('.xls'):
+        return pd.read_excel(file_path)
+    # Check if the file has a .csv extension (CSV file)
+    elif file_path.endswith('.csv'):
+        return pd.read_csv(file_path)
+    else:
+        # Handle unsupported file types or invalid file paths
+        raise ValueError("Unsupported file format or invalid file path")
 ################################# End of Functions ################################# 
 
 ################################# Variables #################################
 file_name = filedialog.askopenfilename()
-df = pd.read_csv(file_name)
+df = read_file(file_name)
+
 ################################# End of Variables #################################
 
 ################################# Data Analysis #################################
@@ -134,16 +146,16 @@ h = tk.BooleanVar()
 # radio_4.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
 
 # Create a Frame for input widgets
-widgets_frame = ttk.Frame(root, padding=(0, 0, 0, 10))
-widgets_frame.grid(row=0, column=1, padx=10, pady=(30, 10), sticky="nsew", rowspan=3)
+widgets_frame = ttk.Frame(root, padding=(20, 10))
+widgets_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nsew")
 widgets_frame.columnconfigure(index=0, weight=1)
 # Button
 clear_nan_but = ttk.Button(widgets_frame, text="Clear all Nan", command=clear_nan)
-clear_nan_but.grid(row=0, column=0, padx=5, pady=10, sticky="nsew")
+clear_nan_but.grid(row=0, column=0, padx=5, pady=10, sticky="nw")
 
 # Button
 save_file_but = ttk.Button(widgets_frame, text="Save File", command=save_file)
-save_file_but.grid(row=1, column=0, padx=5, pady=10, sticky="nsew")
+save_file_but.grid(row=1, column=0, padx=5, pady=10, sticky="nw")
 
 # # Entry
 # entry = ttk.Entry(widgets_frame)
@@ -225,11 +237,11 @@ treeScrollx.config(command=treeview.xview)
 
 # Configure the columns
 # For the first column, use special identifier "#0"
-treeview.column("#0", width=120)
+treeview.column("#0", stretch=0,width=120)
 treeview.heading("#0",anchor="w")
 for index, col in enumerate(column_keys):
     # For other columns, use numerical indices starting from 1
-    treeview.column(index, anchor="w", width=120)
+    treeview.column(index, anchor="w", stretch=0, width=120)
     treeview.heading(index, text=col, anchor="w")
 
 # Insert data into Treeviewh
