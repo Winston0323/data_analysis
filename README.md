@@ -11,7 +11,7 @@ This is a tool for data analysis. It will display Mean Median and mode. Further 
 (2) Install requirements
 
 ```
-    pip install requirement.txt
+pip install requirement.txt
 ```
 
 # 3. How to use
@@ -21,7 +21,7 @@ This is a tool for data analysis. It will display Mean Median and mode. Further 
 (2) Start program
 
 ```
-    python data_analysis.py
+python data_analysis.py
 ```
 
 (3) Use functions
@@ -30,7 +30,7 @@ This is a tool for data analysis. It will display Mean Median and mode. Further 
 
 # 4. reference
 
-https://github.com/rdbende/Forest-ttk-theme
+[Foreset-ttk-theme](https://github.com/rdbende/Forest-ttk-theme)
 
 # 5. example
 
@@ -39,6 +39,11 @@ https://github.com/rdbende/Forest-ttk-theme
 </p>
 
 # 6. Update
+
+## 4/22/2024
+
+* Fix save csv file error
+* Open new file half implemented
 
 ## 4/21/2024
 

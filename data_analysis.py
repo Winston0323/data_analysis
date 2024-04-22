@@ -27,24 +27,35 @@ def clear_nan():
 def save_file():
     global df, file_name
     dot_ind = file_name.rfind(".")
-    df.to_csv(file_name[0:dot_ind]+"_processed" + file_name[dot_ind:], index=False)    
-
-def read_file(file_path):
     # Check if the file has a .xlsx or .xls extension (Excel file)
-    if file_path.endswith('.xlsx') or file_path.endswith('.xls'):
-        return pd.read_excel(file_path)
+    if file_extension == '.xlsx' or file_extension =='.xls':
+        df.to_excel(file_name[0:dot_ind]+"_processed" + file_name[dot_ind:], index=False)
     # Check if the file has a .csv extension (CSV file)
-    elif file_path.endswith('.csv'):
-        return pd.read_csv(file_path)
+    elif file_extension == '.csv':
+        df.to_csv(file_name[0:dot_ind]+"_processed" + file_name[dot_ind:], index=False)    
+    else:
+        # Handle unsupported file types or invalid file paths
+        raise ValueError("Unsupported file format or invalid file path")
+    
+def read_file():
+    global file_name, file_extension, df
+    file_name = filedialog.askopenfilename()
+    dot_ind = file_name.rfind(".")
+    file_extension = file_name[dot_ind:]
+    # Check if the file has a .xlsx or .xls extension (Excel file)
+    if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
+        df =  pd.read_excel(file_name)
+    # Check if the file has a .csv extension (CSV file)
+    elif file_name.endswith('.csv'):
+        df =  pd.read_csv(file_name)
     else:
         # Handle unsupported file types or invalid file paths
         raise ValueError("Unsupported file format or invalid file path")
 ################################# End of Functions ################################# 
 
 ################################# Variables #################################
-file_name = filedialog.askopenfilename()
-df = read_file(file_name)
-
+df = None
+read_file()
 ################################# End of Variables #################################
 
 ################################# Data Analysis #################################
@@ -101,21 +112,142 @@ combo_list = ["Combobox", "Editable item 1", "Editable item 2"]
 readonly_combo_list = ["Readonly combobox", "Item 1", "Item 2"]
 
 # Create control variables
-a = tk.BooleanVar()
-b = tk.BooleanVar(value=True)
-c = tk.BooleanVar()
-d = tk.IntVar(value=2)
-e = tk.StringVar(value=option_menu_list[1])
-f = tk.BooleanVar()
-g = tk.DoubleVar(value=75.0)
-h = tk.BooleanVar()
+# a = tk.BooleanVar()
+# b = tk.BooleanVar(value=True)
+# c = tk.BooleanVar()
+# d = tk.IntVar(value=2)
+# e = tk.StringVar(value=option_menu_list[1])
+# f = tk.BooleanVar()
+# g = tk.DoubleVar(value=75.0)
+# h = tk.BooleanVar()
+# Create a Frame for input widgets
+widgets_frame = ttk.Frame(root, padding=(20, 10))
+widgets_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nsew")
+widgets_frame.columnconfigure(index=0, weight=1)
 
-# Create a Frame for the Checkbuttons
+# open file button
+open_file_but = ttk.Button(widgets_frame, text="Open File", command=read_file)
+open_file_but.grid(row=0, column=0, padx=5, pady=10, sticky="nw")
+
+# clear nan function button
+clear_nan_but = ttk.Button(widgets_frame, text="Clear all Nan", command=clear_nan)
+clear_nan_but.grid(row=1, column=0, padx=5, pady=10, sticky="nw")
+
+# save file button
+save_file_but = ttk.Button(widgets_frame, text="Save File", command=save_file)
+save_file_but.grid(row=2, column=0, padx=5, pady=10, sticky="nw")
+
+# Panedwindow
+paned = ttk.PanedWindow(root, width=600)
+paned.grid(row=0, column=2, pady=(25, 5), sticky="nsew", rowspan=3)
+
+# Pane #1
+pane_1 = ttk.Frame(paned)
+paned.add(pane_1, weight=1)
+# Create a Frame for the Treeview
+treeFrame = ttk.Frame(pane_1)
+treeFrame.pack(expand=False, fill="y", padx=5, pady=5)
+
+# Scrollbar
+treeScrolly = ttk.Scrollbar(treeFrame)
+treeScrolly.pack(side="right", fill="y")
+# Scrollbar
+treeScrollx = ttk.Scrollbar(treeFrame, orient="horizontal")
+treeScrollx.pack(side="bottom", fill="x")
+# Treeview
+row_count, col_count = df.shape
+row_keys = df.index.tolist()
+column_keys = df.columns.tolist()
+treeview = ttk.Treeview(treeFrame, yscrollcommand=treeScrolly.set, xscrollcommand=treeScrollx.set, columns=column_keys, height=20)
+treeview.pack(expand=True, fill="y")
+treeScrolly.config(command=treeview.yview)
+treeScrollx.config(command=treeview.xview)
+
+# Configure the columns
+# For the first column, use special identifier "#0"
+treeview.column("#0", stretch=0,width=120)
+treeview.heading("#0",anchor="w")
+for index, col in enumerate(column_keys):
+    # For other columns, use numerical indices starting from 1
+    treeview.column(index, anchor="w", stretch=0, width=120)
+    treeview.heading(index, text=col, anchor="w")
+
+# Insert data into Treeview 
+for i, row_label in enumerate(row_keys):
+    values = df.iloc[i].tolist()
+    numeric_values = [x for x in values if isinstance(x, (int, float))]
+    treeview.insert('', 'end', values=values)
+
+# Sizegrip
+sizegrip = ttk.Sizegrip(root)
+sizegrip.grid(row=100, column=100, padx=(0, 5), pady=(0, 5))
+
+# Center the window, and set minsize
+root.update()
+root.minsize(root.winfo_width(), root.winfo_height())
+x_cordinate = int((root.winfo_screenwidth()/2) - (root.winfo_width()/2))
+y_cordinate = int((root.winfo_screenheight()/2) - (root.winfo_height()/2))
+root.geometry("+{}+{}".format(x_cordinate, y_cordinate))
+
+# Start the main loop
+root.mainloop()
+################################# End of GUI #################################
+
+################################# REFERENCE #################################
+# """
+# Example script for testing the Forest theme
+
+# Author: rdbende
+# License: MIT license
+# Source: https://github.com/rdbende/ttk-widget-factory
+# """
+
+
+# import tkinter as tk
+# from tkinter import ttk
+
+# root = tk.Tk()
+# root.title("Forest")
+# root.option_add("*tearOff", False) # This is always a good idea
+
+# # Make the app responsive
+# root.columnconfigure(index=0, weight=1)
+# root.columnconfigure(index=1, weight=1)
+# root.columnconfigure(index=2, weight=1)
+# root.rowconfigure(index=0, weight=1)
+# root.rowconfigure(index=1, weight=1)
+# root.rowconfigure(index=2, weight=1)
+
+# # Create a style
+# style = ttk.Style(root)
+
+# # Import the tcl file
+# root.tk.call("source", "forest-dark.tcl")
+
+# # Set the theme with the theme_use method
+# style.theme_use("forest-dark")
+
+# # Create lists for the Comboboxes
+# option_menu_list = ["", "OptionMenu", "Option 1", "Option 2"]
+# combo_list = ["Combobox", "Editable item 1", "Editable item 2"]
+# readonly_combo_list = ["Readonly combobox", "Item 1", "Item 2"]
+
+# # Create control variables
+# a = tk.BooleanVar()
+# b = tk.BooleanVar(value=True)
+# c = tk.BooleanVar()
+# d = tk.IntVar(value=2)
+# e = tk.StringVar(value=option_menu_list[1])
+# f = tk.BooleanVar()
+# g = tk.DoubleVar(value=75.0)
+# h = tk.BooleanVar()
+
+# # Create a Frame for the Checkbuttons
 # check_frame = ttk.LabelFrame(root, text="Checkbuttons", padding=(20, 10))
 # check_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nsew")
 
 # # Checkbuttons
-# check_1 = ttk.Checkbutton(check_frame, text="Remove All NAN Row", variable=a)
+# check_1 = ttk.Checkbutton(check_frame, text="Unchecked", variable=a)
 # check_1.grid(row=0, column=0, padx=5, pady=10, sticky="nsew")
 # check_2 = ttk.Checkbutton(check_frame, text="Checked", variable=b)
 # check_2.grid(row=1, column=0, padx=5, pady=10, sticky="nsew")
@@ -145,17 +277,10 @@ h = tk.BooleanVar()
 # radio_4 = ttk.Radiobutton(radio_frame, text="Disabled", state="disabled")
 # radio_4.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
 
-# Create a Frame for input widgets
-widgets_frame = ttk.Frame(root, padding=(20, 10))
-widgets_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nsew")
-widgets_frame.columnconfigure(index=0, weight=1)
-# Button
-clear_nan_but = ttk.Button(widgets_frame, text="Clear all Nan", command=clear_nan)
-clear_nan_but.grid(row=0, column=0, padx=5, pady=10, sticky="nw")
-
-# Button
-save_file_but = ttk.Button(widgets_frame, text="Save File", command=save_file)
-save_file_but.grid(row=1, column=0, padx=5, pady=10, sticky="nw")
+# # Create a Frame for input widgets
+# widgets_frame = ttk.Frame(root, padding=(0, 0, 0, 10))
+# widgets_frame.grid(row=0, column=1, padx=10, pady=(30, 10), sticky="nsew", rowspan=3)
+# widgets_frame.columnconfigure(index=0, weight=1)
 
 # # Entry
 # entry = ttk.Entry(widgets_frame)
@@ -209,48 +334,75 @@ save_file_but.grid(row=1, column=0, padx=5, pady=10, sticky="nw")
 # switch = ttk.Checkbutton(widgets_frame, text="Switch", style="Switch")
 # switch.grid(row=9, column=0, padx=5, pady=10, sticky="nsew")
 
-# Panedwindow
-paned = ttk.PanedWindow(root, width=600)
-paned.grid(row=0, column=2, pady=(25, 5), sticky="nsew", rowspan=3)
+# # Panedwindow
+# paned = ttk.PanedWindow(root)
+# paned.grid(row=0, column=2, pady=(25, 5), sticky="nsew", rowspan=3)
 
-# Pane #1
-pane_1 = ttk.Frame(paned)
-paned.add(pane_1, weight=1)
-# Create a Frame for the Treeview
-treeFrame = ttk.Frame(pane_1)
-treeFrame.pack(expand=False, fill="y", padx=5, pady=5)
+# # Pane #1
+# pane_1 = ttk.Frame(paned)
+# paned.add(pane_1, weight=1)
 
-# Scrollbar
-treeScrolly = ttk.Scrollbar(treeFrame)
-treeScrolly.pack(side="right", fill="y")
-# Scrollbar
-treeScrollx = ttk.Scrollbar(treeFrame, orient="horizontal")
-treeScrollx.pack(side="bottom", fill="x")
-# Treeview
-row_count, col_count = df.shape
-row_keys = df.index.tolist()
-column_keys = df.columns.tolist()
-treeview = ttk.Treeview(treeFrame, yscrollcommand=treeScrolly.set, xscrollcommand=treeScrollx.set, columns=column_keys, height=20)
-treeview.pack(expand=True, fill="y")
-treeScrolly.config(command=treeview.yview)
-treeScrollx.config(command=treeview.xview)
+# # Create a Frame for the Treeview
+# treeFrame = ttk.Frame(pane_1)
+# treeFrame.pack(expand=True, fill="both", padx=5, pady=5)
 
-# Configure the columns
-# For the first column, use special identifier "#0"
-treeview.column("#0", stretch=0,width=120)
-treeview.heading("#0",anchor="w")
-for index, col in enumerate(column_keys):
-    # For other columns, use numerical indices starting from 1
-    treeview.column(index, anchor="w", stretch=0, width=120)
-    treeview.heading(index, text=col, anchor="w")
+# # Scrollbar
+# treeScroll = ttk.Scrollbar(treeFrame)
+# treeScroll.pack(side="right", fill="y")
 
-# Insert data into Treeviewh
-for i, row_label in enumerate(row_keys):
-    values = df.iloc[i].tolist()
-    numeric_values = [x for x in values if isinstance(x, (int, float))]
-    treeview.insert('', 'end', values=values)
+# # Treeview
+# treeview = ttk.Treeview(treeFrame, selectmode="extended", yscrollcommand=treeScroll.set, columns=(1, 2), height=12)
+# treeview.pack(expand=True, fill="both")
+# treeScroll.config(command=treeview.yview)
 
+# # Treeview columns
+# treeview.column("#0", width=120)
+# treeview.column(1, anchor="w", width=120)
+# treeview.column(2, anchor="w", width=120)
 
+# # Treeview headings
+# treeview.heading("#0", text="Column 1", anchor="center")
+# treeview.heading(1, text="Column 2", anchor="center")
+# treeview.heading(2, text="Column 3", anchor="center")
+
+# # Define treeview data
+# treeview_data = [
+#     ("", "end", 1, "Parent", ("Item 1", "Value 1")),
+#     (1, "end", 2, "Child", ("Subitem 1.1", "Value 1.1")),
+#     (1, "end", 3, "Child", ("Subitem 1.2", "Value 1.2")),
+#     (1, "end", 4, "Child", ("Subitem 1.3", "Value 1.3")),
+#     (1, "end", 5, "Child", ("Subitem 1.4", "Value 1.4")),
+#     ("", "end", 6, "Parent", ("Item 2", "Value 2")),
+#     (6, "end", 7, "Child", ("Subitem 2.1", "Value 2.1")),
+#     (6, "end", 8, "Sub-parent", ("Subitem 2.2", "Value 2.2")),
+#     (8, "end", 9, "Child", ("Subitem 2.2.1", "Value 2.2.1")),
+#     (8, "end", 10, "Child", ("Subitem 2.2.2", "Value 2.2.2")),
+#     (8, "end", 11, "Child", ("Subitem 2.2.3", "Value 2.2.3")),
+#     (6, "end", 12, "Child", ("Subitem 2.3", "Value 2.3")),
+#     (6, "end", 13, "Child", ("Subitem 2.4", "Value 2.4")),
+#     ("", "end", 14, "Parent", ("Item 3", "Value 3")),
+#     (14, "end", 15, "Child", ("Subitem 3.1", "Value 3.1")),
+#     (14, "end", 16, "Child", ("Subitem 3.2", "Value 3.2")),
+#     (14, "end", 17, "Child", ("Subitem 3.3", "Value 3.3")),
+#     (14, "end", 18, "Child", ("Subitem 3.4", "Value 3.4")),
+#     ("", "end", 19, "Parent", ("Item 4", "Value 4")),
+#     (19, "end", 20, "Child", ("Subitem 4.1", "Value 4.1")),
+#     (19, "end", 21, "Sub-parent", ("Subitem 4.2", "Value 4.2")),
+#     (21, "end", 22, "Child", ("Subitem 4.2.1", "Value 4.2.1")),
+#     (21, "end", 23, "Child", ("Subitem 4.2.2", "Value 4.2.2")),
+#     (21, "end", 24, "Child", ("Subitem 4.2.3", "Value 4.2.3")),
+#     (19, "end", 25, "Child", ("Subitem 4.3", "Value 4.3"))
+#     ]
+
+# # Insert treeview data
+# for item in treeview_data:
+#     treeview.insert(parent=item[0], index=item[1], iid=item[2], text=item[3], values=item[4])
+#     if item[0] == "" or item[2] in (8, 12):
+#         treeview.item(item[2], open=True) # Open parents
+
+# # Select and scroll
+# treeview.selection_set(10)
+# treeview.see(7)
 
 # # Pane #2
 # pane_2 = ttk.Frame(paned)
@@ -289,18 +441,16 @@ for i, row_label in enumerate(row_keys):
 
 # notebook.pack(expand=True, fill="both", padx=5, pady=5)
 
-# Sizegrip
-sizegrip = ttk.Sizegrip(root)
-sizegrip.grid(row=100, column=100, padx=(0, 5), pady=(0, 5))
+# # Sizegrip
+# sizegrip = ttk.Sizegrip(root)
+# sizegrip.grid(row=100, column=100, padx=(0, 5), pady=(0, 5))
 
-# Center the window, and set minsize
-root.update()
-root.minsize(root.winfo_width(), root.winfo_height())
-x_cordinate = int((root.winfo_screenwidth()/2) - (root.winfo_width()/2))
-y_cordinate = int((root.winfo_screenheight()/2) - (root.winfo_height()/2))
-root.geometry("+{}+{}".format(x_cordinate, y_cordinate))
+# # Center the window, and set minsize
+# root.update()
+# root.minsize(root.winfo_width(), root.winfo_height())
+# x_cordinate = int((root.winfo_screenwidth()/2) - (root.winfo_width()/2))
+# y_cordinate = int((root.winfo_screenheight()/2) - (root.winfo_height()/2))
+# root.geometry("+{}+{}".format(x_cordinate, y_cordinate))
 
-# Start the main loop
-root.mainloop()
-################################# End of GUI #################################
-
+# # Start the main loop
+# root.mainloop()
