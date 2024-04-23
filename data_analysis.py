@@ -38,7 +38,7 @@ def save_file():
         raise ValueError("Unsupported file format or invalid file path")
     
 def read_file():
-    global file_name, file_extension, df
+    global file_name, file_extension, df, treeview
     file_name = filedialog.askopenfilename()
     dot_ind = file_name.rfind(".")
     file_extension = file_name[dot_ind:]
@@ -51,11 +51,23 @@ def read_file():
     else:
         # Handle unsupported file types or invalid file paths
         raise ValueError("Unsupported file format or invalid file path")
+def update_info_text():
+    text_widget.delete("1.0", "end")
+    text_widget.insert("end", "File Name:" + file_name + "\n")
+    text_widget.insert("end", "File Extension:" + file_extension)
+
+def open_file():
+    read_file()
+    update_tree_view()
+    update_info_text()
+    
+
 ################################# End of Functions ################################# 
 
 ################################# Variables #################################
 df = None
 read_file()
+
 ################################# End of Variables #################################
 
 ################################# Data Analysis #################################
@@ -77,7 +89,6 @@ def calculate_mode(row):
     mode = [value for value, count in counts.items() if count == max(counts.values())]
     # If multiple modes, return them as a comma-separated string
     return ','.join(map(str, mode))
-
 # Apply the custom function to each row
 df['Mode'] = df.apply(calculate_mode, axis=1)
 df['Mean'] = mean_values
@@ -111,31 +122,26 @@ option_menu_list = ["", "OptionMenu", "Option 1", "Option 2"]
 combo_list = ["Combobox", "Editable item 1", "Editable item 2"]
 readonly_combo_list = ["Readonly combobox", "Item 1", "Item 2"]
 
-# Create control variables
-# a = tk.BooleanVar()
-# b = tk.BooleanVar(value=True)
-# c = tk.BooleanVar()
-# d = tk.IntVar(value=2)
-# e = tk.StringVar(value=option_menu_list[1])
-# f = tk.BooleanVar()
-# g = tk.DoubleVar(value=75.0)
-# h = tk.BooleanVar()
-# Create a Frame for input widgets
+
 widgets_frame = ttk.Frame(root, padding=(20, 10))
 widgets_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nsew")
 widgets_frame.columnconfigure(index=0, weight=1)
-
+# Create a Frame for the Checkbuttons
+text_widget = tk.Text(widgets_frame, wrap="word", width=30, height=10, font=("Arial", 12))
+text_widget.insert("1.0", "Hello, this is a Text widget.")
+text_widget.grid(row=0, column=0, padx=5, pady=10, sticky="nw")
+update_info_text()
 # open file button
-open_file_but = ttk.Button(widgets_frame, text="Open File", command=read_file)
-open_file_but.grid(row=0, column=0, padx=5, pady=10, sticky="nw")
+open_file_but = ttk.Button(widgets_frame, text="Open File", command=open_file)
+open_file_but.grid(row=1, column=0, padx=5, pady=10, sticky="nw")
 
 # clear nan function button
 clear_nan_but = ttk.Button(widgets_frame, text="Clear all Nan", command=clear_nan)
-clear_nan_but.grid(row=1, column=0, padx=5, pady=10, sticky="nw")
+clear_nan_but.grid(row=2, column=0, padx=5, pady=10, sticky="nw")
 
 # save file button
 save_file_but = ttk.Button(widgets_frame, text="Save File", command=save_file)
-save_file_but.grid(row=2, column=0, padx=5, pady=10, sticky="nw")
+save_file_but.grid(row=3, column=0, padx=5, pady=10, sticky="nw")
 
 # Panedwindow
 paned = ttk.PanedWindow(root, width=600)

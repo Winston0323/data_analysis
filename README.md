@@ -40,6 +40,11 @@ python data_analysis.py
 
 # 6. Update
 
+## 4/23/2024
+
+* Add info frame
+* Finished open new file
+
 ## 4/22/2024
 
 * Fix save csv file error
