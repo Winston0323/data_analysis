@@ -40,6 +40,10 @@ python data_analysis.py
 
 # 6. Update
 
+## 4/24/2024
+
+* Add more information in to info frame
+
 ## 4/23/2024
 
 * Add info frame

@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import pandas as pd
+import os
 import statistics
 from collections import Counter
 ################################# Functions #################################
@@ -25,36 +26,44 @@ def clear_nan():
     update_tree_view()
 
 def save_file():
-    global df, file_name
-    dot_ind = file_name.rfind(".")
+    global df, file_path
+    dot_ind = file_path.rfind(".")
     # Check if the file has a .xlsx or .xls extension (Excel file)
     if file_extension == '.xlsx' or file_extension =='.xls':
-        df.to_excel(file_name[0:dot_ind]+"_processed" + file_name[dot_ind:], index=False)
+        df.to_excel(file_path[0:dot_ind]+"_processed" + file_path[dot_ind:], index=False)
     # Check if the file has a .csv extension (CSV file)
     elif file_extension == '.csv':
-        df.to_csv(file_name[0:dot_ind]+"_processed" + file_name[dot_ind:], index=False)    
+        df.to_csv(file_path[0:dot_ind]+"_processed" + file_path[dot_ind:], index=False)    
     else:
         # Handle unsupported file types or invalid file paths
         raise ValueError("Unsupported file format or invalid file path")
     
 def read_file():
-    global file_name, file_extension, df, treeview
-    file_name = filedialog.askopenfilename()
-    dot_ind = file_name.rfind(".")
-    file_extension = file_name[dot_ind:]
+    global file_path, file_extension, df, treeview, folder_path, file_name, file_type, row_num, col_num
+    file_path = filedialog.askopenfilename()
+    folder_path, file_name = os.path.split(file_path)
+    dot_ind = file_path.rfind(".")
+    file_extension = file_path[dot_ind:]
     # Check if the file has a .xlsx or .xls extension (Excel file)
-    if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
-        df =  pd.read_excel(file_name)
+    if file_path.endswith('.xlsx') or file_path.endswith('.xls'):
+        df =  pd.read_excel(file_path)
+        file_type = "excel"
     # Check if the file has a .csv extension (CSV file)
-    elif file_name.endswith('.csv'):
-        df =  pd.read_csv(file_name)
+    elif file_path.endswith('.csv'):
+        df =  pd.read_csv(file_path)
+        file_type = "csv"
     else:
         # Handle unsupported file types or invalid file paths
         raise ValueError("Unsupported file format or invalid file path")
+    row_num, col_num = df.shape
+    
 def update_info_text():
     text_widget.delete("1.0", "end")
-    text_widget.insert("end", "File Name:" + file_name + "\n")
-    text_widget.insert("end", "File Extension:" + file_extension)
+    text_widget.insert("end", "File Name: " + file_name + "\n")
+    text_widget.insert("end", "Folder path :" + folder_path + "\n")
+    text_widget.insert("end", "File Type: " + file_type + "\n")
+    text_widget.insert("end", "Row number: " + str(row_num) + "\n")
+    text_widget.insert("end", "Column number: " + str(col_num) + "\n")
 
 def open_file():
     read_file()
@@ -66,8 +75,14 @@ def open_file():
 
 ################################# Variables #################################
 df = None
+file_path = ""
+file_extension = ""
+folder_path = ""
+file_name = ""
+file_type = ""
+row_num = -1
+col_num = -1
 read_file()
-
 ################################# End of Variables #################################
 
 ################################# Data Analysis #################################
@@ -127,7 +142,7 @@ widgets_frame = ttk.Frame(root, padding=(20, 10))
 widgets_frame.grid(row=0, column=0, padx=(20, 10), pady=(20, 10), sticky="nsew")
 widgets_frame.columnconfigure(index=0, weight=1)
 # Create a Frame for the Checkbuttons
-text_widget = tk.Text(widgets_frame, wrap="word", width=30, height=10, font=("Arial", 12))
+text_widget = tk.Text(widgets_frame, wrap="word", width=45, height=5, font=("Arial", 10))
 text_widget.insert("1.0", "Hello, this is a Text widget.")
 text_widget.grid(row=0, column=0, padx=5, pady=10, sticky="nw")
 update_info_text()
